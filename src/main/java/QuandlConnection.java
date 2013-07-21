@@ -7,29 +7,34 @@ import org.apache.http.impl.client.DefaultHttpClient;
 
 import java.io.IOException;
 
-/**
- * Description of file content.
- *
- * @author atrask
- *         7/21/13
- */
 public class QuandlConnection {
 
-    String token;
+    private String token;
+    private boolean isToken = false;
+    private final String baseUrl = "http://www.quandl.com/api/v1/datasets/";
 
     public QuandlConnection(String token) {
 
         if (connectedWithGoodToken(token)) {
             this.token = token;
+            isToken = true;
         } else {
             System.out.println("Bad token... you are connected through the public api and will be rate limited accordingly.");
         }
     }
 
+    public QDataset getDataset(String qCode) {
+        if (isToken) {
+            return new QDataset(curl(baseUrl + qCode + ".json?auth_token="+token),"csv");
+        } else {
+            return new QDataset(curl(baseUrl + qCode + ".json"),"json");
+        }
 
+    }
 
     /**
      * This method uses the "favorites" url to check that the provided token is valid.
+     *
      * @param token this is the security token for your quandl account.
      * @return true or false... depending on whether or not the token is valid.
      */
@@ -46,6 +51,7 @@ public class QuandlConnection {
 
     /**
      * This method just executes HTTP requests... putting the boilerplate code in one place.
+     *
      * @param url this is the url for the http request... it assumes "http://" is already included.
      * @return it returns the response from the url in string form... or the message of the exception if one is thrown.
      */
