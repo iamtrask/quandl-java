@@ -1,5 +1,4 @@
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.HttpResponseException;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.BasicResponseHandler;
@@ -19,23 +18,38 @@ public class QuandlConnection {
     String token;
 
     public QuandlConnection(String token) {
-        this.token = token;
-        System.out.println("Is good token:" + connectedWithGoodToken());
+
+        if (connectedWithGoodToken(token)) {
+            this.token = token;
+        } else {
+            System.out.println("Bad token... you are connected through the public api and will be rate limited accordingly.");
+        }
     }
 
-    public boolean connectedWithGoodToken() {
+
+
+    /**
+     * This method uses the "favorites" url to check that the provided token is valid.
+     * @param token this is the security token for your quandl account.
+     * @return true or false... depending on whether or not the token is valid.
+     */
+    private boolean connectedWithGoodToken(String token) {
         String output = this.curl("http://www.quandl.com/api/v1/current_user/collections/datasets/favourites.json?auth_token=" + token);
 //        System.out.println("OUTPUT:" + output);
-         if(output.contains("Unauthorized")) {
-             System.out.println("BAD TOKEN!!! Check your token under http://www.quandl.com/users/edit Click \"API\" and use the token specified");
+        if (output.contains("Unauthorized")) {
+            System.out.println("BAD TOKEN!!! Check your token under http://www.quandl.com/users/edit Click \"API\" and use the token specified");
             return false;
-         }
+        }
         return true;
 
     }
 
-
-    public String curl(String url) {
+    /**
+     * This method just executes HTTP requests... putting the boilerplate code in one place.
+     * @param url this is the url for the http request... it assumes "http://" is already included.
+     * @return it returns the response from the url in string form... or the message of the exception if one is thrown.
+     */
+    private String curl(String url) {
 
         String output = "";
 
