@@ -8,10 +8,16 @@ import java.util.ArrayList;
  */
 public class QDataset {
 
-    ArrayList<ArrayList<String>> dataset = new ArrayList<ArrayList<String>>();
+    private String data = "";
 
     public QDataset(String data, String type) {
-
+        this.data = data;
     }
+
+    public String getData() {
+        return data;
+    }
+
+
 
 }
