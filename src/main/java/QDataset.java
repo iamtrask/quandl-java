@@ -28,7 +28,7 @@ public class QDataset {
     private boolean isPrivate;
     private String errors;
     private String rawData;
-    private ArrayList<QEntry> dataset =  new ArrayList<QEntry>();
+    private ArrayList<QEntry> dataset = new ArrayList<QEntry>();
 
 
     JSONParser parser = new JSONParser();
@@ -63,7 +63,7 @@ public class QDataset {
             rawData = json.get("data").toString();
 
             JSONArray tempDataset = (JSONArray) parser.parse(rawData);
-            for(Object eachRow : tempDataset) {
+            for (Object eachRow : tempDataset) {
                 this.addJsonRow(eachRow.toString());
             }
 
@@ -74,7 +74,7 @@ public class QDataset {
 
     }
 
-    public void addJsonRow(String row) throws ParseException{
+    public void addJsonRow(String row) throws ParseException {
         System.out.println("ADDING ROW:" + row);
         JSONArray tmp = (JSONArray) parser.parse(row);
         dataset.add(new QEntry(tmp));
@@ -105,6 +105,31 @@ public class QDataset {
 
     public String getData() {
         return rawData;
+    }
+
+    public ArrayList<QEntry> getDataset() {
+        return dataset;
+    }
+
+    public ArrayList<ArrayList<String>> getArrayMatrix() {
+        ArrayList<ArrayList<String>> arrayMatrix = new ArrayList<ArrayList<String>>();
+
+        for (QEntry eachEntry : dataset) {
+            arrayMatrix.add(eachEntry.getRow());
+        }
+
+        return arrayMatrix;
+    }
+
+    public String[][] getStringMatrix() {
+        String stringMatrix[][] = new String[dataset.size()][dataset.get(0).getRow().size()];
+
+        for (int i = 0; i < dataset.size(); i++) {
+            for (int j = 0; j < dataset.get(i).getRow().size(); j++) {
+                stringMatrix[i][j] = dataset.get(i).getRow().get(j);
+            }
+        }
+        return stringMatrix;
     }
 
 
