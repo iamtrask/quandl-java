@@ -56,8 +56,12 @@ public class QuandlConnection {
             }
         }
 
+        if(isToken) {
+            paramString = paramString + "auth_token=" + token + "&";
+        }
 
-        return new QDataset(curl(baseUrl + params.get("qCode") + ".json?" + paramString.substring(0, paramString.length() - 2)), "json");
+
+        return new QDataset(curl(baseUrl + params.get("source_code") + "/" + params.get("code") + ".json?" + paramString.substring(0, paramString.length() - 2)), "json");
 
     }
 
