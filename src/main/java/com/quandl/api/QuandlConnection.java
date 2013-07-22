@@ -16,6 +16,10 @@ public class QuandlConnection {
     private boolean isToken = false;
     private final String baseUrl = "http://www.quandl.com/api/v1/datasets/";
 
+    public QuandlConnection() {
+        System.out.println("No token... you are connected through the public api and will be rate limited accordingly.");
+    }
+
     public QuandlConnection(String token) {
 
         if (connectedWithGoodToken(token)) {
@@ -64,6 +68,8 @@ public class QuandlConnection {
         return new QDataset(curl(baseUrl + params.get("source_code") + "/" + params.get("code") + ".json?" + paramString.substring(0, paramString.length() - 2)), "json");
 
     }
+
+
 
 
     /**
