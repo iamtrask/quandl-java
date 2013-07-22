@@ -1,3 +1,4 @@
+package com.quandl.api;
 
 public class Main {
 
