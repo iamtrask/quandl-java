@@ -31,12 +31,14 @@ public class QDataset {
     private ArrayList<QEntry> dataset =  new ArrayList<QEntry>();
 
 
-    public QDataset(String data, String type) {
+    JSONParser parser = new JSONParser();
+
+    public QDataset(String input, String type) {
 
         try {
 
-            JSONParser parser = new JSONParser();
-            JSONObject json = (JSONObject) parser.parse(data);
+
+            JSONObject json = (JSONObject) parser.parse(input);
 
             id = json.get("id").toString();
             sourceCode = json.get("source_code").toString();
@@ -60,11 +62,22 @@ public class QDataset {
             errors = json.get("errors").toString();
             rawData = json.get("data").toString();
 
+            JSONArray tempDataset = (JSONArray) parser.parse(rawData);
+            for(Object eachRow : tempDataset) {
+                this.addJsonRow(eachRow.toString());
+            }
+
 
         } catch (ParseException e) {
             e.printStackTrace();
         }
 
+    }
+
+    public void addJsonRow(String row) throws ParseException{
+        System.out.println("ADDING ROW:" + row);
+        JSONArray tmp = (JSONArray) parser.parse(row);
+        dataset.add(new QEntry(tmp));
     }
 
     public void print() {
