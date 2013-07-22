@@ -6,6 +6,7 @@ import org.apache.http.impl.client.DefaultHttpClient;
 
 
 import java.io.IOException;
+import java.util.HashMap;
 
 public class QuandlConnection {
 
@@ -24,13 +25,40 @@ public class QuandlConnection {
     }
 
     public QDataset getDataset(String qCode) {
+
         if (isToken) {
-            return new QDataset(curl(baseUrl + qCode + ".json?auth_token="+token),"csv");
+            return new QDataset(curl(baseUrl + qCode + ".json?auth_token=" + token), "json");
         } else {
-            return new QDataset(curl(baseUrl + qCode + ".json"),"json");
+            return new QDataset(curl(baseUrl + qCode + ".json"), "json");
         }
 
     }
+
+    public QDataset getDatasetBetweenDates(String qCode, String start, String end) {
+
+        if (isToken) {
+            return new QDataset(curl(baseUrl + qCode + ".json?trim_start=" + start + "&trim_end=" + end + "&auth_token=" + token), "json");
+        } else {
+            return new QDataset(curl(baseUrl + qCode + ".json?trim_start=" + start + "&trim_end=" + end), "json");
+        }
+
+    }
+
+    public QDataset getDatasetWithParams(HashMap<String, String> params) {
+
+        String paramString = "?";
+
+        for (String eachParam : params.keySet()) {
+            if (!eachParam.contains("code") && !eachParam.contains("Code")) {
+                paramString = paramString + eachParam + "=" + params.get(eachParam) + "&";
+            }
+        }
+
+
+        return new QDataset(curl(baseUrl + params.get("qCode") + ".json?" + paramString.substring(0, paramString.length() - 2)), "json");
+
+    }
+
 
     /**
      * This method uses the "favorites" url to check that the provided token is valid.
