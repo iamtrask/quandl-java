@@ -75,34 +75,62 @@ public class QDataset {
 
     }
 
+    public String getId() {
+        return id;
+
+    }
+
+    public String getSourceCode() {
+        return sourceCode;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getUrlizeName() {
+        return urlize_name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public String getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public String getFrequency() {
+        return frequency;
+    }
+
+    public String getFromDate() {
+        return fromDate;
+    }
+
+    public String getToDate() {
+        return toDate;
+    }
+
+    public boolean isPrivate() {
+        return isPrivate;
+    }
+
+    public String getErrors() {
+        return errors;
+    }
+
+
     public void addJsonRow(String row) throws ParseException {
         System.out.println("ADDING ROW:" + row);
         JSONArray tmp = (JSONArray) parser.parse(row);
         dataset.add(new QEntry(tmp));
     }
 
-    public void print() {
-
-        println("ID:" + id);
-        println("SOURCE CODE:" + sourceCode);
-        println("CODE:" + code);
-        println("NAME:" + name);
-        println("URLIZE NAME:" + urlize_name);
-        println("DESCRIPTION:" + description);
-        println("UPDATED AT:" + updatedAt);
-        println("FREQUENCY:" + frequency);
-        println("FROM DATE:" + fromDate);
-        println("TO DATE:" + toDate);
-        println("IS PRIVATE:" + isPrivate);
-        println("ERRORS:" + errors);
-        println("RAW DATA:" + rawData);
-
-
-    }
-
-    public void println(String string) {
-        System.out.println(string);
-    }
 
     public String getData() {
         return rawData;
@@ -132,6 +160,30 @@ public class QDataset {
         }
         return stringMatrix;
     }
+
+    public void print() {
+
+        println("ID:" + id);
+        println("SOURCE CODE:" + sourceCode);
+        println("CODE:" + code);
+        println("NAME:" + name);
+        println("URLIZE NAME:" + urlize_name);
+        println("DESCRIPTION:" + description);
+        println("UPDATED AT:" + updatedAt);
+        println("FREQUENCY:" + frequency);
+        println("FROM DATE:" + fromDate);
+        println("TO DATE:" + toDate);
+        println("IS PRIVATE:" + isPrivate);
+        println("ERRORS:" + errors);
+        println("RAW DATA:" + rawData);
+
+
+    }
+
+    public void println(String string) {
+        System.out.println(string);
+    }
+
 
 
 }
