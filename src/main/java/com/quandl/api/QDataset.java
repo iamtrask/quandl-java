@@ -132,7 +132,7 @@ public class QDataset {
     }
 
 
-    public String getData() {
+    public String getRawJSON() {
         return rawData;
     }
 
