@@ -12,7 +12,7 @@ import org.junit.Test;
 public class QDatasetIntegrationTest {
 
 
-    QDataset dataset = new QuandlConnection("MNWDqjRSwW6348frGCEo").getDatasetBetweenDates("PRAGUESE/PX","2012-09-30","2012-11-29");
+    QDataset dataset = new QuandlConnection().getDatasetBetweenDates("PRAGUESE/PX","2012-09-30","2012-11-29");
 
     @Test
     public void testIdIntegration() {
