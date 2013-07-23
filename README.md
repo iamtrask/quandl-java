@@ -34,6 +34,8 @@ This version lets you set your custom parameters. You can pick from any paramete
         params.put("source_code","PRAGUESE");
         QDataset data3 = q.getDatasetWithParams(params);
 
+A few examples of extracting the data from a QDataset.
+
         //get Dataset as array matrix
         ArrayList<ArrayList<String>> data3Matrix = data3.getArrayMatrix();
 
