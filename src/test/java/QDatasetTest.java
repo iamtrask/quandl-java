@@ -63,6 +63,14 @@ public class QDatasetTest {
     }
 
     @Test
+    public void getColumnNames() {
+        System.out.println(dataset.getColumnNames());
+        assert dataset.getColumnNames().get(0).equals("Date");
+        assert dataset.getColumnNames().get(1).equals("Index");
+        assert dataset.getColumnNames().get(2).equals("% Change");
+    }
+
+    @Test
     public void testIsPrivate() {
         assert dataset.isPrivate() == false;
     }

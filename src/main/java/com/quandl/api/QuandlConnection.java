@@ -29,6 +29,8 @@ public class QuandlConnection {
         }
     }
 
+
+
     public QDataset getDataset(String qCode) {
 
         if (isToken) {
@@ -79,7 +81,7 @@ public class QuandlConnection {
      */
     private boolean connectedWithGoodToken(String token) {
         String output = this.curl("http://www.quandl.com/api/v1/current_user/collections/datasets/favourites.json?auth_token=" + token);
-//        System.out.println("OUTPUT:" + output);
+
         if (output.contains("Unauthorized")) {
             System.out.println("BAD TOKEN!!! Check your token under http://www.quandl.com/users/edit Click \"API\" and use the token specified");
             return false;
@@ -102,26 +104,17 @@ public class QuandlConnection {
         try {
             HttpGet httpget = new HttpGet(url);
 
-            System.out.println("executing request " + httpget.getURI());
+            System.out.println("Executing Request: " + httpget.getURI());
 
-            // Create a response handler
             ResponseHandler<String> responseHandler = new BasicResponseHandler();
 
             output = httpclient.execute(httpget, responseHandler);
 
-//            System.out.println("----------------------------------------");
-//            System.out.println(output);
-//            System.out.println("----------------------------------------");
-
         } catch (IOException e) {
             e.printStackTrace();
             return e.getMessage();
-
-
         } finally {
-            // When HttpClient instance is no longer needed,
-            // shut down the connection manager to ensure
-            // immediate deallocation of all system resources
+
             httpclient.getConnectionManager().shutdown();
         }
         return output;

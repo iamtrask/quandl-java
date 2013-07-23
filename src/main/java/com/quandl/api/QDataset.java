@@ -25,7 +25,7 @@ public class QDataset {
     private String frequency;
     private String fromDate;
     private String toDate;
-    private ArrayList<String> columnNames;
+    private ArrayList<String> columnNames = new ArrayList<String>();
     private boolean isPrivate;
     private String errors;
     private String rawData;
@@ -52,7 +52,13 @@ public class QDataset {
             fromDate = json.get("from_date").toString();
             toDate = json.get("to_date").toString();
 
-//            columnNames = json.get("column_name");
+
+            JSONArray tempColNames = (JSONArray) parser.parse(json.get("column_names").toString());
+
+            for(Object eachCol : tempColNames) {
+                System.out.print("col:" + eachCol);
+                columnNames.add(eachCol.toString());
+            }
 
             if (json.get("private").toString().contains("true")) {
                 isPrivate = true;
@@ -116,6 +122,10 @@ public class QDataset {
         return toDate;
     }
 
+    public ArrayList<String> getColumnNames() {
+        return columnNames;
+    }
+
     public boolean isPrivate() {
         return isPrivate;
     }
@@ -126,7 +136,7 @@ public class QDataset {
 
 
     public void addJsonRow(String row) throws ParseException {
-        System.out.println("ADDING ROW:" + row);
+
         JSONArray tmp = (JSONArray) parser.parse(row);
         dataset.add(new QEntry(tmp));
     }
