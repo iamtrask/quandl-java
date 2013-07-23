@@ -41,3 +41,6 @@ A few examples of extracting the data from a QDataset.
 
         //get Dataset as String Matrix
         String[][] data3StringMatrix = data3.getStringMatrix();
+        
+        
+        [![githalytics.com alpha](https://cruel-carlota.pagodabox.com/66c2b522d67dfd66cc5e445fc32976ee "githalytics.com")](http://githalytics.com/github.com/iamtrask)
