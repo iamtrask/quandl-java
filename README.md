@@ -1,6 +1,6 @@
 quandl-java
 ===========
-
+ [![githalytics.com alpha](https://cruel-carlota.pagodabox.com/66c2b522d67dfd66cc5e445fc32976ee "githalytics.com")](http://githalytics.com/github.com/iamtrask)
 This is a java api for the quandl dataservice. It's goal is to make it easy for you to use Quandl's data for a java application.
 
 Our first step is to open a connection to quandl using an api key. This connection will facilitate the creation of dataset objects (dataset downloads).
@@ -43,4 +43,4 @@ A few examples of extracting the data from a QDataset.
         String[][] data3StringMatrix = data3.getStringMatrix();
         
         
-        [![githalytics.com alpha](https://cruel-carlota.pagodabox.com/66c2b522d67dfd66cc5e445fc32976ee "githalytics.com")](http://githalytics.com/github.com/iamtrask)
+       
