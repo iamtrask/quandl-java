@@ -1,8 +1,10 @@
 quandl-java
 ===========
 
-This is a java api for the quandl dataservice. 
+This is a java api for the quandl dataservice. It's goal is to make it easy for you to use Quandl's data for a java application.
 
+
+<code>
         //open connection with key
         QuandlConnection q = new QuandlConnection("my key");
 
@@ -27,3 +29,4 @@ This is a java api for the quandl dataservice.
 
         //get Dataset as String Matrix
         String[][] data3StringMatrix = data3.getStringMatrix();
+</code>
