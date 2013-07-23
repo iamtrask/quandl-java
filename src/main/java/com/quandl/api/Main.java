@@ -19,14 +19,12 @@ public class Main {
         //get dataset between two sets of dates
         QDataset data2 = q.getDatasetBetweenDates("PRAGUESE/PX","2012-01-01","2012-11-26");
 
-
         //get dataset with custom parameters
         HashMap<String, String> params = new HashMap<String, String>();
         params.put("trim_start","2012-09-30");
         params.put("code","PX");
         params.put("source_code","PRAGUESE");
         QDataset data3 = q.getDatasetWithParams(params);
-
 
         //get Dataset as array matrix
         ArrayList<ArrayList<String>> data3Matrix = data3.getArrayMatrix();

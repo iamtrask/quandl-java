@@ -6,7 +6,6 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.BasicResponseHandler;
 import org.apache.http.impl.client.DefaultHttpClient;
 
-
 import java.io.IOException;
 import java.util.HashMap;
 
@@ -107,7 +106,9 @@ public class QuandlConnection {
 
             // Create a response handler
             ResponseHandler<String> responseHandler = new BasicResponseHandler();
+
             output = httpclient.execute(httpget, responseHandler);
+
 //            System.out.println("----------------------------------------");
 //            System.out.println(output);
 //            System.out.println("----------------------------------------");
