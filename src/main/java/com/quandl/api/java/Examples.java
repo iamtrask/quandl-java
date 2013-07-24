@@ -8,7 +8,7 @@ public class Examples {
     public final static void main(String[] args) throws Exception {
 
         //open connection with key
-        QuandlConnection q = new QuandlConnection();
+        QuandlConnection q = new QuandlConnection("MNWDqjRSwW6348frGCEo");
 
         //open connection without key
         QuandlConnection r = new QuandlConnection();

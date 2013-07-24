@@ -5,8 +5,8 @@
  *         7/22/13
  */
 
-import com.quandl.api.QDataset;
-import com.quandl.api.QuandlConnection;
+import com.quandl.api.java.QDataset;
+import com.quandl.api.java.QuandlConnection;
 import org.junit.Test;
 
 public class QDatasetIntegrationTest {
