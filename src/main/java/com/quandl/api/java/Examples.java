@@ -1,11 +1,11 @@
 package com.quandl.api.java;
 
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public class Examples {
-
-    public final static void main(String[] args) throws Exception {
+    @SuppressWarnings("unused")
+    public final static void main(String[] args) {
 
         //open connection with key
         QuandlConnection q = new QuandlConnection("mykey");
@@ -20,18 +20,14 @@ public class Examples {
         QDataset data2 = q.getDatasetBetweenDates("PRAGUESE/PX","2012-01-01","2012-11-26");
 
         //get dataset with custom parameters
-        HashMap<String, String> params = new HashMap<String, String>();
+        HashMap<String, String> params = new HashMap<>();
         params.put("trim_start","2012-09-30");
-        params.put("code","PX");
-        params.put("source_code","PRAGUESE");
-        QDataset data3 = q.getDatasetWithParams(params);
+        QDataset data3 = q.getDatasetWithParams("PRAGUESE/PX",params);
 
         //get Dataset as array matrix
-        ArrayList<ArrayList<String>> data3Matrix = data3.getArrayMatrix();
+        List<List<String>> data3Matrix = data3.getMatrix();
 
         //get Dataset as String Matrix
         String[][] data3StringMatrix = data3.getStringMatrix();
-
     }
-
 }
