@@ -1,6 +1,7 @@
 package com.quandl.api.java;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -8,13 +9,10 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 /**
- * Description of file content.
- *
- * @author atrask
- *         7/21/13
+ * Represents a Quantl Dataset.
  */
 public class QDataset {
-
+    // TODO these should be final
     private String id;
     private String sourceCode;
     private String code;
@@ -25,20 +23,21 @@ public class QDataset {
     private String frequency;
     private String fromDate;
     private String toDate;
-    private ArrayList<String> columnNames = new ArrayList<String>();
+    private ArrayList<String> columnNames = new ArrayList<>();
     private boolean isPrivate;
     private String errors;
     private String rawData;
-    private ArrayList<QEntry> dataset = new ArrayList<QEntry>();
-
+    private ArrayList<QEntry> dataset = new ArrayList<>();
 
     JSONParser parser = new JSONParser();
 
-    public QDataset(String input, String type) {
-
+    @Deprecated
+    public QDataset(String input, @SuppressWarnings("unused") String type) {
+        this(input);
+    }
+    
+    public QDataset(String input) {
         try {
-
-
             JSONObject json = (JSONObject) parser.parse(input);
 
             id = json.get("id").toString();
@@ -52,19 +51,13 @@ public class QDataset {
             fromDate = json.get("from_date").toString();
             toDate = json.get("to_date").toString();
 
-
             JSONArray tempColNames = (JSONArray) parser.parse(json.get("column_names").toString());
 
             for(Object eachCol : tempColNames) {
-                System.out.print("col:" + eachCol);
                 columnNames.add(eachCol.toString());
             }
 
-            if (json.get("private").toString().contains("true")) {
-                isPrivate = true;
-            } else {
-                isPrivate = false;
-            }
+            isPrivate = json.get("private").toString().contains("true");
 
             errors = json.get("errors").toString();
             rawData = json.get("data").toString();
@@ -73,12 +66,10 @@ public class QDataset {
             for (Object eachRow : tempDataset) {
                 this.addJsonRow(eachRow.toString());
             }
-
-
         } catch (ParseException e) {
+            // TODO raise exception on bad parse
             e.printStackTrace();
         }
-
     }
 
     public String getId() {
@@ -122,7 +113,7 @@ public class QDataset {
         return toDate;
     }
 
-    public ArrayList<String> getColumnNames() {
+    public List<String> getColumnNames() {
         return columnNames;
     }
 
@@ -131,12 +122,11 @@ public class QDataset {
     }
 
     public String getErrors() {
+        // TODO provide more structured Error object
         return errors;
     }
 
-
     public void addJsonRow(String row) throws ParseException {
-
         JSONArray tmp = (JSONArray) parser.parse(row);
         dataset.add(new QEntry(tmp));
     }
@@ -146,12 +136,12 @@ public class QDataset {
         return rawData;
     }
 
-    public ArrayList<QEntry> getDataset() {
+    public List<QEntry> getDataset() {
         return dataset;
     }
 
-    public ArrayList<ArrayList<String>> getArrayMatrix() {
-        ArrayList<ArrayList<String>> arrayMatrix = new ArrayList<ArrayList<String>>();
+    public List<List<String>> getMatrix() {
+        ArrayList<List<String>> arrayMatrix = new ArrayList<>();
 
         for (QEntry eachEntry : dataset) {
             arrayMatrix.add(eachEntry.getRow());
@@ -159,9 +149,15 @@ public class QDataset {
 
         return arrayMatrix;
     }
+    
+    @Deprecated
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    public ArrayList<ArrayList<String>> getArrayMatrix() {
+        return (ArrayList)getMatrix();
+    }
 
     public String[][] getStringMatrix() {
-        String stringMatrix[][] = new String[dataset.size()][dataset.get(0).getRow().size()];
+        String stringMatrix[][] = new String[dataset.size()][columnNames.size()];
 
         for (int i = 0; i < dataset.size(); i++) {
             for (int j = 0; j < dataset.get(i).getRow().size(); j++) {
@@ -171,29 +167,26 @@ public class QDataset {
         return stringMatrix;
     }
 
+    @Deprecated
     public void print() {
-
-        println("ID:" + id);
-        println("SOURCE CODE:" + sourceCode);
-        println("CODE:" + code);
-        println("NAME:" + name);
-        println("URLIZE NAME:" + urlize_name);
-        println("DESCRIPTION:" + description);
-        println("UPDATED AT:" + updatedAt);
-        println("FREQUENCY:" + frequency);
-        println("FROM DATE:" + fromDate);
-        println("TO DATE:" + toDate);
-        println("IS PRIVATE:" + isPrivate);
-        println("ERRORS:" + errors);
-        println("RAW DATA:" + rawData);
-
-
+        System.out.println(this);
     }
-
-    public void println(String string) {
-        System.out.println(string);
+    
+    @Override
+    public String toString() {
+        // Guava's ToStringHelper
+        return "ID:" + id +
+               "\nSOURCE CODE:" + sourceCode +
+               "\nCODE:" + code +
+               "\nNAME:" + name +
+               "\nURLIZE NAME:" + urlize_name +
+               "\nDESCRIPTION:" + description +
+               "\nUPDATED AT:" + updatedAt +
+               "\nFREQUENCY:" + frequency +
+               "\nFROM DATE:" + fromDate +
+               "\nTO DATE:" + toDate +
+               "\nIS PRIVATE:" + isPrivate +
+               "\nERRORS:" + errors +
+               "\nRAW DATA:" + rawData;
     }
-
-
-
 }

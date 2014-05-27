@@ -30,7 +30,7 @@ public class QDatasetTest {
     
     @Test
     public void parseDataset() throws IOException {
-        QDataset dataset = new QDataset(readResource(getClass().getClassLoader().getResourceAsStream("PRAGUESE-PX.json")),"");
+        QDataset dataset = new QDataset(readResource(getClass().getClassLoader().getResourceAsStream("PRAGUESE-PX.json")));
         assertEquals("2422996", dataset.getId());
         assertEquals("PRAGUESE", dataset.getSourceCode());
         assertEquals("PX", dataset.getCode());

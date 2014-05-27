@@ -3,42 +3,28 @@ package com.quandl.api.java;
 import org.json.simple.JSONArray;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
- * Description of file content.
- *
- * @author atrask
- *         7/21/13
+ * Represents a single row of a QDataset result.
  */
 public class QEntry {
-
     private String date;
-
-
-    private ArrayList<String> row;
+    private ArrayList<String> row = new ArrayList<>();
 
     public QEntry(JSONArray entry) {
-
-        row = new ArrayList<String>();
-
         this.date = entry.get(0).toString();
-
-
+        
         for(Object eachValue : entry) {
             row.add(eachValue.toString());
         }
-
-
-    }
-
-    public ArrayList<String> getRow() {
-        return row;
     }
 
     public String getDate() {
         return date;
     }
 
-
-
+    public List<String> getRow() {
+        return row;
+    }
 }
