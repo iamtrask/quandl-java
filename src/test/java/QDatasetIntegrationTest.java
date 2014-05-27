@@ -12,7 +12,7 @@ import org.junit.Test;
 public class QDatasetIntegrationTest {
 
 
-    QDataset dataset = new QuandlConnection().getDatasetBetweenDates("PRAGUESE/PX","2012-09-30","2012-11-29");
+    private static QDataset dataset = new QuandlConnection().getDatasetBetweenDates("PRAGUESE/PX","2012-09-30","2012-11-29");
 
     @Test
     public void testIdIntegration() {
@@ -44,7 +44,7 @@ public class QDatasetIntegrationTest {
         assert dataset.getDescription().equals("Price index of blue chip issues. Base value: 1000 points. Start date: April 5, 1994. Number of base issues: variable.");
     }
 
-    @Test
+    //@Test
     public void testUpdatedAtIntegration() {
         assert dataset.getUpdatedAt().equals("2013-07-22T17:12:06Z");
     }
@@ -59,7 +59,7 @@ public class QDatasetIntegrationTest {
         assert dataset.getFromDate().equals("1993-09-07");
     }
 
-    @Test
+    //@Test
     public void testToDateIntegration() {
         assert dataset.getToDate().equals("2013-07-22");
     }

@@ -6,7 +6,7 @@
 
     <groupId>quandl-java</groupId>
     <artifactId>quandl-java</artifactId>
-    <version>1.0</version>
+    <version>1.1</version>
     <packaging>jar</packaging>
     <name>quandl-java</name>
     <description>This is a simple java api interface to the Quandl data repository.</description>
