@@ -1,89 +1,45 @@
 package com.quandl.api.java;
 /**
- * Description of file content.
- *
- * @author atrask
- *         7/22/13
+ * Basic connection integration test, hits Quandl's public
+ * API and confirms response is structured as expected.
+ * 
+ * Note this test can trigger false failures, particularly
+ * if you're attempting to build the project while offline.
+ * It's safe to disable this test if it's failing and you
+ * have no reason to believe you've caused the failure.
  */
+
+import static org.junit.Assert.*;
 
 import org.junit.Test;
 
 public class QDatasetIntegrationTest {
-
-
-    private static QDataset dataset = new QuandlConnection().getDatasetBetweenDates("PRAGUESE/PX","2012-09-30","2012-11-29");
-
+    /*
+     * Note this test is overly-brittle; it checks for specific
+     * Quandl data, when really all we're trying to confirm is
+     * that Quandl responded with data we could parse.
+     * 
+     * It would likely be good enough to simply get the QDataset
+     * object back and confirm no errors.  As a first pass, I've
+     * tidied up the test to limit it to data that "ought" to be
+     * permanent.
+     */
     @Test
-    public void testIdIntegration() {
-        assert dataset.getId().equals("2422996");
+    public void testIntegration() {
+        QDataset dataset = new QuandlConnection().getDatasetBetweenDates("PRAGUESE/PX","2012-09-30","2012-11-29");
+        assertEquals("2422996", dataset.getId());
+        assertEquals("PRAGUESE", dataset.getSourceCode());
+        assertEquals("PX", dataset.getCode());
+        assertFalse(dataset.getName().isEmpty());
+        assertFalse(dataset.getUrlizeName().isEmpty());
+        assertFalse(dataset.getDescription().isEmpty());
+        assertFalse(dataset.getUpdatedAt().isEmpty()); // could validate string is parse-able as a time
+        assertFalse(dataset.getFrequency().isEmpty());
+        assertFalse(dataset.getFromDate().isEmpty()); // could validate string is parse-able as a date
+        assertFalse(dataset.getToDate().isEmpty()); // could validate string is parse-able as a date
+        assertFalse(dataset.getColumnNames().isEmpty());
+        assertFalse(dataset.isPrivate());
+        assertEquals("{}", dataset.getErrors());
+        assertFalse(dataset.getDataset().isEmpty());
     }
-
-    @Test
-    public void testSourceCodeIntegration() {
-        assert dataset.getSourceCode().equals("PRAGUESE");
-    }
-
-    @Test
-    public void testCodeIntegration() {
-        assert dataset.getCode().equals("PX");
-    }
-
-    @Test
-    public void testNameIntegration() {
-        assert dataset.getName().equals("Prague Stock Index: PX");
-    }
-
-    @Test
-    public void testUrlizeIntegration() {
-        assert dataset.getUrlizeName().equals("Prague-Stock-Index-PX");
-    }
-
-    @Test
-    public void testDescriptionIntegration() {
-        assert dataset.getDescription().equals("Price index of blue chip issues. Base value: 1000 points. Start date: April 5, 1994. Number of base issues: variable.");
-    }
-
-    //@Test
-    public void testUpdatedAtIntegration() {
-        assert dataset.getUpdatedAt().equals("2013-07-22T17:12:06Z");
-    }
-
-    @Test
-    public void testFrequencyIntegration() {
-        assert dataset.getFrequency().equals("daily");
-    }
-
-    @Test
-    public void testFromDatIntegration() {
-        assert dataset.getFromDate().equals("1993-09-07");
-    }
-
-    //@Test
-    public void testToDateIntegration() {
-        assert dataset.getToDate().equals("2013-07-22");
-    }
-
-    @Test
-    public void getColumnNamesIntegration() {
-        System.out.println(dataset.getColumnNames());
-        assert dataset.getColumnNames().get(0).equals("Date");
-        assert dataset.getColumnNames().get(1).equals("Index");
-        assert dataset.getColumnNames().get(2).equals("% Change");
-    }
-
-    @Test
-    public void testIsPrivateIntegration() {
-        assert dataset.isPrivate() == false;
-    }
-
-    @Test
-    public void testErrorsIntegration() {
-        assert dataset.getErrors().equals("{}");
-    }
-
-    @Test
-    public void testDatasetIntegration() {
-        assert dataset.getDataset().size() == 44;
-    }
-
 }
