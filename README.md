@@ -40,5 +40,12 @@ A few examples of extracting the data from a QDataset.
     //get Dataset as String Matrix
     String[][] data3StringMatrix = data3.getStringMatrix();
         
-        
-       
+----
+
+To build, simply run:
+
+    mvn package
+
+And Jars will be availible in `target/`.  Note that this does not run remote tests.  To run all tests, including hitting Quandl's API and verifying the response, run:
+
+    mvn integration-test
