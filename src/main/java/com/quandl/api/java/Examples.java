@@ -27,7 +27,7 @@ public class Examples {
         }
 
         // Or even reuse a query's settings in a new type of query
-        MultisetQuery mq = Queries.createFrom("WIKI/GOOG", 4, "WIKI/FB", 4, datedQuery);
+        MultisetQuery mq = Queries.createMultisetFrom("WIKI/GOOG", 4, "WIKI/FB", 4, datedQuery);
         
         // TODO Get dataset
     }

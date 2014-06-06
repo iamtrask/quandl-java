@@ -275,11 +275,6 @@ public abstract class BaseQuery implements Query {
     
     protected abstract Map<String,String> getSubParamMap();
     
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(year, month, day);
-    }
-    
     /**
      * Internal class representing a local date.  Ideally, we'd use
      * JodaTime or Java 8, however for the moment we're simply using
