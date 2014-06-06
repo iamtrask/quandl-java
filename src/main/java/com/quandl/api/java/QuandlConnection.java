@@ -1,10 +1,21 @@
 package com.quandl.api.java;
 
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.HttpResponseException;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.BasicResponseHandler;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.HttpClients;
+
+import com.google.common.base.Joiner;
+import com.google.common.base.Joiner.MapJoiner;
+import com.google.common.base.Throwables;
+import com.quandl.api.java.query.MetadataQuery;
+import com.quandl.api.java.query.MultisetQuery;
+import com.quandl.api.java.query.Query;
+import com.quandl.api.java.query.SimpleQuery;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -15,25 +26,41 @@ import java.util.Map.Entry;
  * Primary entry-point, this class manages connections to Quandl
  * and allows you to make requests for QDatasets.
  */
-public class QuandlConnection {
+public class QuandlConnection implements AutoCloseable {
+    private static final ResponseHandler<String> RESPONSE_HANDLER = new BasicResponseHandler();
     private static final String GOOD_TOKEN_URL = "http://www.quandl.com/api/v1/current_user/collections/datasets/favourites.json?auth_token=%s";
-    private static final String BASE_URL = "http://www.quandl.com/api/v1/datasets/";
+    private static final String BASE_URL = "http://www.quandl.com/api/v1/datasets/%s.json";
+    private static final MapJoiner URL_ARG_JOINER = Joiner.on('&').withKeyValueSeparator("=");
     
     private String token = null;
+    
+    public static QuandlConnection getLimitedConnection() {
+        return new QuandlConnection(null, false);
+    }
+    
+    public static QuandlConnection getFullConnection(String token) throws InvalidTokenException {
+        return new QuandlConnection(checkGoodToken(token), false);
+    }
 
-    // TODO provide factory methods .getLimitedConnection() and .getFullConnection(String token) instead of public constructors
-    // TODO remove System.out calls
+    @Deprecated
     public QuandlConnection() {
+        System.out.println("Warning, accessing deprecated QuandlConnection constructor");
         System.out.println("No token... you are connected through the public api and will be rate limited accordingly.");
     }
 
+    @Deprecated
     public QuandlConnection(String token) {
-
+        System.out.println("Warning, accessing deprecated QuandlConnection constructor");
         if (connectedWithGoodToken(token)) {
             this.token = token;
         } else {
             System.out.println("Bad token... you are connected through the public api and will be rate limited accordingly.");
         }
+    }
+    
+    // we use a separate, private constructor to avoid the printing constructors
+    private QuandlConnection(String token, @SuppressWarnings("unused") boolean dummy) {
+        this.token = token; 
     }
     
     private String withAuthToken(String url) {
@@ -42,13 +69,41 @@ public class QuandlConnection {
         }
         return url;
     }
+    
+    public QDataset getDataset(SimpleQuery sq) {
+        // FIXME map is not URL-encoded
+        String args = URL_ARG_JOINER.join(sq.toParameterMap());
+        if(!args.isEmpty()) {
+            args = "?"+args;
+        }
+        String url = withAuthToken(String.format(BASE_URL,sq.getQCode())+args);
+        try {
+            return new QDataset(getPageText(url));
+        } catch (HttpResponseException e) {
+            throw Throwables.propagate(e);
+        }
+    }
+    
+    public QDataset getDataset(@SuppressWarnings("unused") MultisetQuery mq) {
+        // TODO
+        throw new UnsupportedOperationException("Unimplemented.");
+    }
+    
+    public QDataset getDataset(@SuppressWarnings("unused") MetadataQuery mdq) {
+        // TODO
+        throw new UnsupportedOperationException("Unimplemented.");
+    }
+
+    public QDataset getDataset(Query unknownQuery) {
+        throw new UnsupportedOperationException("Unable to process "+unknownQuery.getClass().getName()+" - incomplete API?");
+    }
 
     public QDataset getDataset(String qCode) {
-        return new QDataset(curl(withAuthToken(BASE_URL + qCode + ".json")));
+        return new QDataset(curl(withAuthToken(String.format(BASE_URL,qCode))));
     }
 
     public QDataset getDatasetBetweenDates(String qCode, String start, String end) {
-        return new QDataset(curl(withAuthToken(BASE_URL + qCode + ".json?trim_start=" + start + "&trim_end=" + end)));
+        return new QDataset(curl(withAuthToken(String.format(BASE_URL,qCode) + "?trim_start=" + start + "&trim_end=" + end)));
     }
     
     public QDataset getDatasetWithParams(String qCode, Map<String, String> params) {
@@ -59,7 +114,7 @@ public class QuandlConnection {
         }
         paramSB.deleteCharAt(paramSB.length()-1);
         
-        return new QDataset(curl(withAuthToken(BASE_URL + qCode + ".json" + paramSB)));
+        return new QDataset(curl(withAuthToken(String.format(BASE_URL,qCode) + paramSB)));
     }
     
     @Deprecated
@@ -78,7 +133,9 @@ public class QuandlConnection {
      *
      * @param token this is the security token for your quandl account.
      * @return true or false... depending on whether or not the token is valid.
+     * @deprecated prints on failure
      */
+    @Deprecated
     private static boolean connectedWithGoodToken(String token) {
         String output = curl(String.format(GOOD_TOKEN_URL, token));
 
@@ -89,13 +146,18 @@ public class QuandlConnection {
         }
         return true;
     }
+    
+    private static String checkGoodToken(String token) throws InvalidTokenException {
+        try {
+            getPageText(String.format(GOOD_TOKEN_URL, token));
+            return token;
+        } catch (HttpResponseException e) {
+            throw new InvalidTokenException(token, e);
+        }
+    }
 
-    /**
-     * This method just executes HTTP requests... putting the boilerplate code in one place.
-     *
-     * @param url this is the url for the http request... it assumes "http://" is already included.
-     * @return it returns the response from the url in string form... or the message of the exception if one is thrown.
-     */
+    /** @deprecated use getPageText */
+    @Deprecated
     private static String curl(String url) {
         System.out.println("Executing Request: " + url);
         
@@ -105,11 +167,32 @@ public class QuandlConnection {
             ResponseHandler<String> responseHandler = new BasicResponseHandler();
             return httpclient.execute(httpget, responseHandler);
         } catch (IOException e) {
-            // TODO raise exception, don't return message
             e.printStackTrace();
             return e.getMessage();
         } finally {
             httpclient.getConnectionManager().shutdown();
         }
+    }
+    
+    /**
+     * Execute HTTP requests, raising exceptions on bad response codes.  Returns
+     * the page contents as a String.
+     */
+    // TODO do we need to load the page into memory?  Can we stream through it instead?
+    private static String getPageText(String url) throws HttpResponseException {
+        try (CloseableHttpClient client = HttpClients.createDefault()) {
+            HttpGet get = new HttpGet(url);
+            return client.execute(get, RESPONSE_HANDLER);
+        } catch (HttpResponseException e) {
+            throw e;
+        } catch (IOException e) {
+            // It may be worth forcing callers to properly handle IOExceptions as well
+            throw Throwables.propagate(e);
+        }
+    }
+
+    @Override
+    public void close() {
+        // TODO empty for 1.2, pull the HttpClient construction out of getPageText() and make it a member of the class for 1.3 
     }
 }

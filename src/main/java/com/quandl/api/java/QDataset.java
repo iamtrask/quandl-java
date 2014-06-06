@@ -9,7 +9,7 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 /**
- * Represents a Quantl Dataset.
+ * Represents a Quandl Dataset.
  */
 public class QDataset {
     // TODO these should be final
@@ -70,6 +70,11 @@ public class QDataset {
             // TODO raise exception on bad parse
             e.printStackTrace();
         }
+    }
+    
+    public String getRequestUrl() {
+        // TODO
+        throw new UnsupportedOperationException("Unimplemented.");
     }
 
     public String getId() {

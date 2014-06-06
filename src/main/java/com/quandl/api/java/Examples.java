@@ -1,33 +1,29 @@
 package com.quandl.api.java;
 
-import java.util.HashMap;
-import java.util.List;
+import com.quandl.api.java.query.MultisetQuery;
+import com.quandl.api.java.query.Queries;
+import com.quandl.api.java.query.BaseQuery;
 
 public class Examples {
     @SuppressWarnings("unused")
-    public final static void main(String[] args) {
+    public final static void main(String[] args) throws InvalidTokenException {
+        // Open a connection with or without an API key
+        QuandlConnection qc = args.length >= 1 ? QuandlConnection.getFullConnection(args[0]) : QuandlConnection.getLimitedConnection();
+        
+        // Get a full dataset using its Quandl Code
+        // http://www.quandl.com/WIKI/AAPL-Apple-Inc-AAPL-Prices-Dividends-Splits-and-Trading-Volume
+        QDataset full = qc.getDataset("WIKI/AAPL");
 
-        //open connection with key
-        QuandlConnection q = new QuandlConnection("mykey");
+        // Construct more complex queries with Query objects
+        BaseQuery datedQuery = Queries.create("WIKI/AAPL").dateRange("2013-1-1", "2013-12-31");
+        QDataset filtered = qc.getDataset(datedQuery);
 
-        //open connection without key
-        QuandlConnection r = new QuandlConnection();
+        // And expand on those queries later
+        QDataset sorted = qc.getDataset(datedQuery.ascending());
 
-        //get dataset from keyrange
-        QDataset data1 = q.getDataset("PRAGUESE/PX");
-
-        //get dataset between two sets of dates
-        QDataset data2 = q.getDatasetBetweenDates("PRAGUESE/PX","2012-01-01","2012-11-26");
-
-        //get dataset with custom parameters
-        HashMap<String, String> params = new HashMap<>();
-        params.put("trim_start","2012-09-30");
-        QDataset data3 = q.getDatasetWithParams("PRAGUESE/PX",params);
-
-        //get Dataset as array matrix
-        List<List<String>> data3Matrix = data3.getMatrix();
-
-        //get Dataset as String Matrix
-        String[][] data3StringMatrix = data3.getStringMatrix();
+        // Or even reuse a query's settings in a new type of query
+        MultisetQuery mq = Queries.createFrom("WIKI/GOOG", 4, "WIKI/FB", 4, datedQuery);
+        
+        // TODO Get dataset
     }
 }
