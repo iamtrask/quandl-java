@@ -72,7 +72,7 @@ public class QuandlConnection implements AutoCloseable {
     
     public QDataset getDataset(SimpleQuery sq) {
         // FIXME map is not URL-encoded
-        String args = URL_ARG_JOINER.join(sq.toParameterMap());
+        String args = URL_ARG_JOINER.join(sq.getParameterMap());
         if(!args.isEmpty()) {
             args = "?"+args;
         }

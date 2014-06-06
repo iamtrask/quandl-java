@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Map;
 
+import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableMap;
 
 public class SimpleQuery extends BaseQuery {
@@ -31,5 +32,20 @@ public class SimpleQuery extends BaseQuery {
     @Override
     protected Map<String, String> getSubParamMap() {
         return ImmutableMap.of();
+    }
+    
+    @Override
+    public boolean equals(Object o) {
+        if(!(o instanceof SimpleQuery)) {
+            return false;
+        }
+        SimpleQuery sq = (SimpleQuery)o;
+        return super.equals(sq) &&
+               Objects.equal(qCode, sq.qCode);
+    }
+    
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(super.hashCode(), qCode);
     }
 }

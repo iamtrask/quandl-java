@@ -54,7 +54,7 @@ public class QDatasetTest {
      */
     @Test(groups="remote")
     public void testIntegration() {
-        QDataset dataset = new QuandlConnection().getDatasetBetweenDates("PRAGUESE/PX","2012-09-30","2012-11-29");
+        QDataset dataset = QuandlConnection.getLimitedConnection().getDatasetBetweenDates("PRAGUESE/PX","2012-09-30","2012-11-29");
         assertEquals(dataset.getId(), "2422996");
         assertEquals(dataset.getSourceCode(), "PRAGUESE");
         assertEquals(dataset.getCode(), "PX");

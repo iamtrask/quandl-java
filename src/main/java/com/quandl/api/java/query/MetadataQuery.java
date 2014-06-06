@@ -18,7 +18,7 @@ public class MetadataQuery implements Query {
     }
 
     @Override
-    public Map<String, String> toParameterMap() {
+    public Map<String, String> getParameterMap() {
         return ImmutableMap.of();
     }
 }
