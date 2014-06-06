@@ -16,7 +16,7 @@ public class QEntry {
         this.date = entry.get(0).toString();
         
         for(Object eachValue : entry) {
-            row.add(eachValue.toString());
+            row.add(eachValue == null ? "null" : eachValue.toString());
         }
     }
 
@@ -26,5 +26,10 @@ public class QEntry {
 
     public List<String> getRow() {
         return row;
+    }
+    
+    @Override
+    public String toString() {
+        return row.toString();
     }
 }

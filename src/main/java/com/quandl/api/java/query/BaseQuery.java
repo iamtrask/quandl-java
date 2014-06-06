@@ -221,7 +221,7 @@ public abstract class BaseQuery implements Query {
     protected abstract Map<String,String> getSubParamMap();
     
     private static class Date {
-        private static final String DATE_FORMAT = "%4d-%2d-%2d";
+        private static final String DATE_FORMAT = "%04d-%02d-%02d";
         private final int year, month, day;
         
         public static Function<String,Date> FROM_STRING = new Function<String,Date>() {

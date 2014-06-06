@@ -95,6 +95,16 @@ public class QuandlConnection implements AutoCloseable {
     }
 
     public QDataset getDataset(Query unknownQuery) {
+        // Shouldn't need these instance of checks...
+        if(unknownQuery instanceof SimpleQuery) {
+            return getDataset((SimpleQuery)unknownQuery);
+        }
+        if(unknownQuery instanceof MultisetQuery) {
+            return getDataset((MultisetQuery)unknownQuery);
+        }
+        if(unknownQuery instanceof MetadataQuery) {
+            return getDataset((MetadataQuery)unknownQuery);
+        }
         throw new UnsupportedOperationException("Unable to process "+unknownQuery.getClass().getName()+" - incomplete API?");
     }
 

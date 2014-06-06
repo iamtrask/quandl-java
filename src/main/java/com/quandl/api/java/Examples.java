@@ -19,7 +19,12 @@ public class Examples {
         QDataset filtered = qc.getDataset(datedQuery);
 
         // And expand on those queries later
-        QDataset sorted = qc.getDataset(datedQuery.ascending());
+        QDataset sorted = qc.getDataset(datedQuery.ascending().numRows(10));
+        System.out.println(sorted.getName());
+        System.out.println(sorted.getDescription());
+        for(QEntry qe : sorted.getDataset()) {
+            System.out.println("\t"+qe);
+        }
 
         // Or even reuse a query's settings in a new type of query
         MultisetQuery mq = Queries.createFrom("WIKI/GOOG", 4, "WIKI/FB", 4, datedQuery);
