@@ -10,6 +10,18 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
+/**
+ * Represents a multiset query, for specific columns
+ * from one or more Quandl datasets.
+ * 
+ *  You can build a MultisetQuery with as many code/columns as
+ *  you'd like, however at a minimum you must always specify at
+ *  least two.  To specify only one, simply use a SimpleQuery
+ *  and set a column filter.
+ * 
+ * @author Michael Diamond
+ * @since  2014-6-6
+ */
 public class MultisetQuery extends BaseQuery {
     private static final Joiner COMMA_JOINER = Joiner.on(',');
     private final List<SourceColumn> sources;
@@ -36,16 +48,16 @@ public class MultisetQuery extends BaseQuery {
         return new MultisetQuery(sources, this);
     }
     
+    /**
+     * Adds an additional source column to the query.
+     * 
+     * Use Queries.createMultisetFrom() to create a new MultisetQuery
+     * without the current set of columns.
+     */
     public MultisetQuery sourceColumn(String qCode, int column) {
         return new MultisetQuery(
             new ImmutableList.Builder<SourceColumn>().addAll(sources).add(new SourceColumn(qCode, column)).build(),
             this);
-    }
-    
-    public MultisetQuery withSourceColumns(String qCode1, int column1, String qCode2, int column2) {
-        return new MultisetQuery(ImmutableList.of(new SourceColumn(qCode1, column1),
-                                                  new SourceColumn(qCode2, column2)),
-                                 this);
     }
 
     @Override

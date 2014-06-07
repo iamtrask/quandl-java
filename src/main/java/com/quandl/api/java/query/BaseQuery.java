@@ -43,7 +43,7 @@ import com.google.common.collect.ImmutableMap;
  */
 public abstract class BaseQuery implements Query {
     public static enum SortOrder {ASC, DESC}
-    public static enum Collapse {NONE, DAILY, WEEKLY, MONTHLY, QUARTERLY, ANNUALY}
+    public static enum Collapse {NONE, DAILY, WEEKLY, MONTHLY, QUARTERLY, ANNUALLY}
     public static enum Transform {NONE, DIFF, RDIFF, CUMUL, NORMALIZE}
     
     private SortOrder sort;
@@ -273,12 +273,16 @@ public abstract class BaseQuery implements Query {
     }
     private transient Map<String,String> cache = null;
     
+    /**
+     * Lets implementing classes specify their own parameters, which
+     * BaseQuery will include in its parameter map.
+     */
     protected abstract Map<String,String> getSubParamMap();
     
     /**
      * Internal class representing a local date.  Ideally, we'd use
      * JodaTime or Java 8, however for the moment we're simply using
-     * this class to validate correctly formatted date-like strings.
+     * this class to validate the string is date-like.
      */
     private static class Date {
         private static final String DATE_FORMAT = "%04d-%02d-%02d";

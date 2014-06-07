@@ -7,6 +7,13 @@ import java.util.Map;
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableMap;
 
+/**
+ * Represents a standard Quandl query for a single dataset,
+ * essentially a BaseQuery for a specific QuandlCode.
+ * 
+ * @author Michael Diamond
+ * @since  2014-6-6
+ */
 public class SimpleQuery extends BaseQuery {
     private final String qCode;
     
@@ -25,6 +32,9 @@ public class SimpleQuery extends BaseQuery {
         return new SimpleQuery(qCode, this);
     }
     
+    /**
+     * Returns the QuandlCode for this query
+     */
     public String getQCode() {
         return qCode;
     }

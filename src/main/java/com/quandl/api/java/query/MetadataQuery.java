@@ -6,6 +6,13 @@ import java.util.Map;
 
 import com.google.common.collect.ImmutableMap;
 
+/**
+ * Represents a MetadataQuery to get metadata about
+ * a Quandl dataset. 
+ * 
+ * @author Michael Diamond
+ * @since  2014-6-6
+ */
 public class MetadataQuery implements Query {
     private final String qCode;
     
