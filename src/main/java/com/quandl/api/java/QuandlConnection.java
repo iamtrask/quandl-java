@@ -1,21 +1,24 @@
 package com.quandl.api.java;
 
+import static com.google.common.base.Preconditions.*;
+
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.HttpResponseException;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.BasicResponseHandler;
-import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.impl.client.HttpClients;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Joiner.MapJoiner;
+import com.google.common.base.Supplier;
 import com.google.common.base.Throwables;
 import com.quandl.api.java.query.MetadataQuery;
 import com.quandl.api.java.query.MultisetQuery;
+import com.quandl.api.java.query.Queries;
 import com.quandl.api.java.query.Query;
 import com.quandl.api.java.query.SimpleQuery;
+import com.quandl.api.util.HttpController;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -27,27 +30,42 @@ import java.util.Map.Entry;
  * and allows you to make requests for QDatasets.
  */
 public class QuandlConnection implements AutoCloseable {
-    private static final ResponseHandler<String> RESPONSE_HANDLER = new BasicResponseHandler();
     private static final String GOOD_TOKEN_URL = "http://www.quandl.com/api/v1/current_user/collections/datasets/favourites.json?auth_token=%s";
     private static final String BASE_URL = "http://www.quandl.com/api/v1/datasets/%s.json";
     private static final MapJoiner URL_ARG_JOINER = Joiner.on('&').withKeyValueSeparator("=");
     
-    private String token = null;
+    private final String token;
+    private final Supplier<HttpController> httpSup;
     
+    /**
+     * Returns a rate-limited QuandlConnection not tied to any API key. 
+     */
     public static QuandlConnection getLimitedConnection() {
-        return new QuandlConnection(null, false);
+        return new QuandlConnection(null, HttpController.Real.SUPPLIER);
     }
     
+    /**
+     * Returns a QuandlConnection without rate-limiting, based on a valid API key.
+     * This call triggers a request to validate the key. 
+     */
     public static QuandlConnection getFullConnection(String token) throws InvalidTokenException {
-        return new QuandlConnection(checkGoodToken(token), false);
+        return new QuandlConnection(checkGoodToken(token, HttpController.Real.SUPPLIER), HttpController.Real.SUPPLIER);
     }
 
+    /**
+     * @deprecated use getLimitedConnection()
+     */
     @Deprecated
     public QuandlConnection() {
         System.out.println("Warning, accessing deprecated QuandlConnection constructor");
         System.out.println("No token... you are connected through the public api and will be rate limited accordingly.");
+        token = null;
+        httpSup = HttpController.Real.SUPPLIER;
     }
 
+    /**
+     * @deprecated use getFullConnection()
+     */
     @Deprecated
     public QuandlConnection(String token) {
         System.out.println("Warning, accessing deprecated QuandlConnection constructor");
@@ -55,12 +73,16 @@ public class QuandlConnection implements AutoCloseable {
             this.token = token;
         } else {
             System.out.println("Bad token... you are connected through the public api and will be rate limited accordingly.");
+            this.token = null;
         }
+        httpSup = HttpController.Real.SUPPLIER;
     }
     
-    // we use a separate, private constructor to avoid the printing constructors
-    private QuandlConnection(String token, @SuppressWarnings("unused") boolean dummy) {
+    // we use a separate, package-private constructor to avoid the printing constructors
+    /*package*/ QuandlConnection(String token, Supplier<HttpController> httpSup) {
+        // FIXME No checkNotNull() calls for 1.2, 1.3 should explicitly fail
         this.token = token; 
+        this.httpSup = checkNotNull(httpSup);
     }
     
     private String withAuthToken(String url) {
@@ -70,6 +92,9 @@ public class QuandlConnection implements AutoCloseable {
         return url;
     }
     
+    /**
+     * Returns a QDataset view of a given Quandle Dataset built from the passed query.
+     */
     public QDataset getDataset(SimpleQuery sq) {
         // FIXME map is not URL-encoded
         String args = URL_ARG_JOINER.join(sq.getParameterMap());
@@ -77,23 +102,37 @@ public class QuandlConnection implements AutoCloseable {
             args = "?"+args;
         }
         String url = withAuthToken(String.format(BASE_URL,sq.getQCode())+args);
-        try {
-            return new QDataset(getPageText(url));
-        } catch (HttpResponseException e) {
+        // TODO v1.3 Move httpCont to instance variable
+        try (HttpController httpCont = httpSup.get()) {
+            return new QDataset(httpCont.getContents(url));
+        } catch (IOException e) {
             throw Throwables.propagate(e);
         }
     }
     
+    /**
+     * Returns a QDataset view of a given Quandle Multiset build from the passed query.
+     */
     public QDataset getDataset(@SuppressWarnings("unused") MultisetQuery mq) {
         // TODO
         throw new UnsupportedOperationException("Unimplemented.");
     }
     
+    /**
+     * Returns a QDataset (with no data) of a given Guandle Dataset, in order to inspect the dataset's metadata.
+     */
+    // TODO should this return a different type, e.g. QMetadata?
     public QDataset getDataset(@SuppressWarnings("unused") MetadataQuery mdq) {
         // TODO
         throw new UnsupportedOperationException("Unimplemented.");
     }
 
+    /**
+     * Rollup method takes a given Query and returns an appropriate QDataset.
+     * 
+     * The idea here is to use method overloading to call the correct sub-method,
+     * but at first glance this doesn't seem to work as desired.  Needs to be tested.
+     */
     public QDataset getDataset(Query unknownQuery) {
         // Shouldn't need these instance of checks...
         if(unknownQuery instanceof SimpleQuery) {
@@ -108,14 +147,28 @@ public class QuandlConnection implements AutoCloseable {
         throw new UnsupportedOperationException("Unable to process "+unknownQuery.getClass().getName()+" - incomplete API?");
     }
 
+    /**
+     * Returns a QDataset view of a given Quandle Dataset from the passed QCode.
+     */
     public QDataset getDataset(String qCode) {
+        // TODO return getDataset(Queries.create(qCode));
         return new QDataset(curl(withAuthToken(String.format(BASE_URL,qCode))));
     }
 
+    /**
+     * Returns a QDataset view of a given Quandle Dataset from the passed QCode and start and end dates
+     * @deprecated use the Query builder pattern to set the dates you wish to filter by
+     */
+    @Deprecated
     public QDataset getDatasetBetweenDates(String qCode, String start, String end) {
         return new QDataset(curl(withAuthToken(String.format(BASE_URL,qCode) + "?trim_start=" + start + "&trim_end=" + end)));
     }
     
+    /**
+     * Returns a QDataset view of a given Quandl Dataset from the passed QCode and arbitrary parameters
+     * @deprecated use the Query builder pattern to describe the query you wish to make against the API
+     */
+    @Deprecated
     public QDataset getDatasetWithParams(String qCode, Map<String, String> params) {
         // A Guava MapJoiner would make this less painful
         StringBuilder paramSB = new StringBuilder("?");
@@ -157,16 +210,19 @@ public class QuandlConnection implements AutoCloseable {
         return true;
     }
     
-    private static String checkGoodToken(String token) throws InvalidTokenException {
-        try {
-            getPageText(String.format(GOOD_TOKEN_URL, token));
+    private static String checkGoodToken(String token, Supplier<HttpController> httpSup) throws InvalidTokenException {
+        // TODO v1.3 Move httpCont to instance variable
+        try (HttpController httpCont = httpSup.get()) {
+            httpCont.getContents(String.format(GOOD_TOKEN_URL, token));
             return token;
         } catch (HttpResponseException e) {
             throw new InvalidTokenException(token, e);
+        } catch (IOException e) {
+            throw Throwables.propagate(e);
         }
     }
 
-    /** @deprecated use getPageText */
+    /** @deprecated use HttpController */
     @Deprecated
     private static String curl(String url) {
         System.out.println("Executing Request: " + url);
@@ -183,26 +239,9 @@ public class QuandlConnection implements AutoCloseable {
             httpclient.getConnectionManager().shutdown();
         }
     }
-    
-    /**
-     * Execute HTTP requests, raising exceptions on bad response codes.  Returns
-     * the page contents as a String.
-     */
-    // TODO do we need to load the page into memory?  Can we stream through it instead?
-    private static String getPageText(String url) throws HttpResponseException {
-        try (CloseableHttpClient client = HttpClients.createDefault()) {
-            HttpGet get = new HttpGet(url);
-            return client.execute(get, RESPONSE_HANDLER);
-        } catch (HttpResponseException e) {
-            throw e;
-        } catch (IOException e) {
-            // It may be worth forcing callers to properly handle IOExceptions as well
-            throw Throwables.propagate(e);
-        }
-    }
 
     @Override
     public void close() {
-        // TODO empty for 1.2, pull the HttpClient construction out of getPageText() and make it a member of the class for 1.3 
+        // TODO empty for v1.2, pull the HttpClient construction out of getPageText() and make it a member of the class for v1.3 
     }
 }
