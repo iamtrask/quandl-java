@@ -41,8 +41,8 @@ import com.google.common.collect.ImmutableMap;
  *   
  *   Or something similarly more verbose or confusing for the caller.
  */
-public abstract class BaseQuery implements Query {
-    public static enum SortOrder {ASC, DESC}
+public abstract class BaseQuery<Q extends BaseQuery<Q>> implements Query {
+    public static enum SortOrder {DEFAULT, ASC, DESC}
     public static enum Collapse {NONE, DAILY, WEEKLY, MONTHLY, QUARTERLY, ANNUALLY}
     public static enum Transform {NONE, DIFF, RDIFF, CUMUL, NORMALIZE}
     
@@ -56,7 +56,7 @@ public abstract class BaseQuery implements Query {
     
     /** Construct a default BaseQuery */
     /*package*/ BaseQuery() {
-        sort = SortOrder.DESC;
+        sort = SortOrder.DEFAULT;
         rows = Optional.absent();
         start = Optional.absent();
         end = Optional.absent();
@@ -66,7 +66,7 @@ public abstract class BaseQuery implements Query {
     }
     
     /** Copy constructor duplicates from's values */
-    /*package*/ BaseQuery(BaseQuery from) {
+    /*package*/ BaseQuery(BaseQuery<?> from) {
         sort = from.sort;
         rows = from.rows;
         start = from.start;
@@ -82,14 +82,14 @@ public abstract class BaseQuery implements Query {
      * 
      * Returns a duplicate instance of the current object.
      */
-    /*package*/ abstract BaseQuery copy();
+    /*package*/ abstract Q copy();
     
     @Override
     public boolean equals(Object o) {
-        if(!(o instanceof BaseQuery)) {
+        if(!(o instanceof BaseQuery) || !getClass().equals(o.getClass())) {
             return false;
         }
-        BaseQuery bq = (BaseQuery)o;
+        BaseQuery<?> bq = (BaseQuery<?>)o;
         return Objects.equals(sort, bq.sort) &&
                Objects.equals(rows, bq.rows) &&
                Objects.equals(start, bq.start) &&
@@ -108,19 +108,19 @@ public abstract class BaseQuery implements Query {
     // Sort Order
     //
     /** Sets the query's sort order without checking the current value */
-    public BaseQuery sortOrder(SortOrder so) {
-        BaseQuery copy = copy();
-        copy.sort = checkNotNull(so);
+    public Q sortOrder(SortOrder so) {
+        Q copy = copy();
+        ((BaseQuery<Q>)copy).sort = checkNotNull(so);
         return copy;
     }
 
     /** Sets the query's sort order to ascending, if currently descending */
-    public BaseQuery ascending() {
+    public Q ascending() {
         return sortOrder(SortOrder.ASC);
     }
 
     /** Sets the query's sort order to descending, if currently ascending */
-    public BaseQuery descending() {
+    public Q descending() {
         return sortOrder(SortOrder.DESC);
     }
     
@@ -128,35 +128,35 @@ public abstract class BaseQuery implements Query {
     // Truncation
     //
     /** Sets the maximum number of rows to expect, or all if argument is absent. */
-    public BaseQuery numRows(Optional<Integer> rs) {
+    public Q numRows(Optional<Integer> rs) {
         checkArgument(!rs.isPresent() || rs.get() > 0, "Must specify non-negative number of results, saw %s", rs);
-        BaseQuery copy = copy();
-        copy.rows = rs;
+        Q copy = copy();
+        ((BaseQuery<Q>)copy).rows = rs;
         return copy;
     }
     
     /** Clears the maximum row field, if previously set. */
-    public BaseQuery allResults() {
+    public Q allResults() {
         return numRows(Optional.<Integer>absent());
     }
     
     /** Sets the maximum number of rows the API should return. */
-    public BaseQuery numRows(int rs) {
+    public Q numRows(int rs) {
         return numRows(Optional.of(rs));
     }
     
     /** Limits the API to returning one row, the most recent. */
-    public BaseQuery mostRecentRow() {
+    public Q mostRecentRow() {
         return numRows(1);
     }
     
     //
     // Date Range
     //
-    private BaseQuery dateRange(Optional<Date> st, Optional<Date> en) {
-        BaseQuery copy = copy();
-        copy.start = checkNotNull(st);
-        copy.end = checkNotNull(en);
+    private Q dateRange(Optional<Date> st, Optional<Date> en) {
+        Q copy = copy();
+        ((BaseQuery<Q>)copy).start = checkNotNull(st);
+        ((BaseQuery<Q>)copy).end = checkNotNull(en);
         return copy;
     }
     
@@ -164,37 +164,37 @@ public abstract class BaseQuery implements Query {
      * Limits the result to values within the specified date range, which
      * cannot be null, or an invalid date.
      */
-    public BaseQuery dateRange(String st, String en) {
+    public Q dateRange(String st, String en) {
         checkArgument(!start.isPresent());
         checkArgument(!end.isPresent());
         return dateRange(Optional.of(st).transform(Date.FROM_STRING), Optional.of(en).transform(Date.FROM_STRING));
     }
     
     /** Clears date range filtering */
-    public BaseQuery allDates() {
+    public Q allDates() {
         return dateRange(Optional.<Date>absent(), Optional.<Date>absent());
     }
     
     /** Sets just the start date as a lower bound */
-    public BaseQuery startDate(String st) {
+    public Q startDate(String st) {
         checkArgument(!start.isPresent());
         return dateRange(Optional.of(st).transform(Date.FROM_STRING), end);
     }
     
     /** Clears start date filtering */
-    public BaseQuery noStartDate() {
+    public Q noStartDate() {
         checkArgument(start.isPresent());
         return dateRange(Optional.<Date>absent(), end);
     }
     
     /** Sets just the end date as an upper bound */
-    public BaseQuery endDate(String en) {
+    public Q endDate(String en) {
         checkArgument(!end.isPresent());
         return dateRange(start, Optional.of(en).transform(Date.FROM_STRING));
     }
     
     /** Clears end date filtering */
-    public BaseQuery noEndDate() {
+    public Q noEndDate() {
         checkArgument(end.isPresent());
         return dateRange(start, Optional.<Date>absent());
     }
@@ -203,20 +203,20 @@ public abstract class BaseQuery implements Query {
     // Column
     //
     /** Limits the result to only the specified column, or all if absent. */
-    public BaseQuery column(Optional<Integer> clm) {
+    public Q column(Optional<Integer> clm) {
         checkArgument(!clm.isPresent() || clm.get() >= 0, "Must specify positive row number, saw %s", clm);
-        BaseQuery copy = copy();
-        copy.column = clm;
+        Q copy = copy();
+        ((BaseQuery<Q>)copy).column = clm;
         return copy;
     }
     
     /** Set the column to retrieve */
-    public BaseQuery column(int clm) {
+    public Q column(int clm) {
         return column(Optional.of(clm));
     }
     
     /** Clear the column filter, query now retrieves all columns */
-    public BaseQuery allColumns() {
+    public Q allColumns() {
         return column(Optional.<Integer>absent());
     }
     
@@ -224,10 +224,10 @@ public abstract class BaseQuery implements Query {
     // Collapse
     //    
     /** Sets the collapse behavior */
-    public BaseQuery collapse(Collapse clp) {
+    public Q collapse(Collapse clp) {
         checkArgument(collapse != clp);
-        BaseQuery copy = copy();
-        copy.collapse = checkNotNull(clp);
+        Q copy = copy();
+        ((BaseQuery<Q>)copy).collapse = checkNotNull(clp);
         return copy;
     }
     
@@ -235,10 +235,10 @@ public abstract class BaseQuery implements Query {
     // Transform
     //    
     /** Sets the transform behavior */
-    public BaseQuery transform(Transform trn) {
+    public Q transform(Transform trn) {
         checkArgument(transform != trn);
-        BaseQuery copy = copy();
-        copy.transform = checkNotNull(trn);
+        Q copy = copy();
+        ((BaseQuery<Q>)copy).transform = checkNotNull(trn);
         return copy;
     }
     
@@ -251,8 +251,10 @@ public abstract class BaseQuery implements Query {
        // and compute more than once
         if(cache == null) {
             ImmutableMap.Builder<String,String> builder = ImmutableMap.builder();
-            builder.putAll(getSubParamMap())
-                   .put("sort_order", sort.toString().toLowerCase());
+            builder.putAll(getSubParamMap());
+            if(!sort.equals(SortOrder.DEFAULT)) {
+                builder.put("sort_order", sort.toString().toLowerCase());
+            }
             if(rows.isPresent()) {
                 builder.put("rows", String.valueOf(rows.get()));
             }
@@ -265,8 +267,12 @@ public abstract class BaseQuery implements Query {
             if(column.isPresent()) {
                 builder.put("column", column.get().toString());
             }
-            builder.put("collapse", collapse.toString().toLowerCase())
-                   .put("transform", transform.toString().toLowerCase());
+            if(!collapse.equals(Collapse.NONE)) {
+                builder.put("collapse", collapse.toString().toLowerCase());
+            }
+            if(!transform.equals(Transform.NONE)) {
+                builder.put("transform", transform.toString().toLowerCase());
+            }
             cache = builder.build();
         }
         return cache;

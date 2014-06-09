@@ -2,7 +2,7 @@ package com.quandl.api.java;
 
 import com.quandl.api.java.query.MultisetQuery;
 import com.quandl.api.java.query.Queries;
-import com.quandl.api.java.query.BaseQuery;
+import com.quandl.api.java.query.SimpleQuery;
 
 public class Examples {
     @SuppressWarnings("unused")
@@ -15,7 +15,7 @@ public class Examples {
         QDataset full = qc.getDataset("WIKI/AAPL");
 
         // Construct more complex queries with Query objects
-        BaseQuery datedQuery = Queries.create("WIKI/AAPL").dateRange("2013-1-1", "2013-12-31");
+        SimpleQuery datedQuery = Queries.create("WIKI/AAPL").dateRange("2013-1-1", "2013-12-31");
         QDataset filtered = qc.getDataset(datedQuery);
 
         // And expand on those queries later

@@ -1,8 +1,5 @@
-package com.quandl.api.java;
-/**
- * Basic behavior unit test, construct a QDataset and confirm
- * contents are as expected.
- */
+package com.quandl.api.deprecated;
+
 
 import static org.testng.Assert.*;
 
@@ -13,8 +10,12 @@ import org.testng.annotations.Test;
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.Resources;
-import com.quandl.api.java.query.Queries;
+import com.quandl.api.java.QDataset;
+import com.quandl.api.java.QuandlConnection;
 
+/**
+ * Original version of QDatasetTest, making deprecated calls to Quandl API
+ */
 public class QDatasetTest {
     // Good enough for now, should really use a date parsing library
     // http://www.regular-expressions.info/dates.html
@@ -55,7 +56,7 @@ public class QDatasetTest {
      */
     @Test(groups="remote")
     public void testIntegration() {
-        QDataset dataset = QuandlConnection.getLimitedConnection().getDataset(Queries.create("PRAGUESE/PX").dateRange("2012-09-30","2012-11-29"));
+        QDataset dataset = QuandlConnection.getLimitedConnection().getDatasetBetweenDates("PRAGUESE/PX","2012-09-30","2012-11-29");
         assertEquals(dataset.getId(), "2422996");
         assertEquals(dataset.getSourceCode(), "PRAGUESE");
         assertEquals(dataset.getCode(), "PX");

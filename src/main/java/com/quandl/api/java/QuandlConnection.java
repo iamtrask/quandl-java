@@ -2,12 +2,7 @@ package com.quandl.api.java;
 
 import static com.google.common.base.Preconditions.*;
 
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.HttpResponseException;
-import org.apache.http.client.ResponseHandler;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.BasicResponseHandler;
-import org.apache.http.impl.client.DefaultHttpClient;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Joiner.MapJoiner;
@@ -15,7 +10,6 @@ import com.google.common.base.Supplier;
 import com.google.common.base.Throwables;
 import com.quandl.api.java.query.MetadataQuery;
 import com.quandl.api.java.query.MultisetQuery;
-import com.quandl.api.java.query.Queries;
 import com.quandl.api.java.query.Query;
 import com.quandl.api.java.query.SimpleQuery;
 import com.quandl.api.util.HttpController;
@@ -35,7 +29,7 @@ public class QuandlConnection implements AutoCloseable {
     private static final MapJoiner URL_ARG_JOINER = Joiner.on('&').withKeyValueSeparator("=");
     
     private final String token;
-    private final Supplier<HttpController> httpSup;
+    private final Supplier<? extends HttpController> httpSup;
     
     /**
      * Returns a rate-limited QuandlConnection not tied to any API key. 
@@ -57,10 +51,10 @@ public class QuandlConnection implements AutoCloseable {
      */
     @Deprecated
     public QuandlConnection() {
+        httpSup = HttpController.Real.SUPPLIER;
         System.out.println("Warning, accessing deprecated QuandlConnection constructor");
         System.out.println("No token... you are connected through the public api and will be rate limited accordingly.");
         token = null;
-        httpSup = HttpController.Real.SUPPLIER;
     }
 
     /**
@@ -68,6 +62,7 @@ public class QuandlConnection implements AutoCloseable {
      */
     @Deprecated
     public QuandlConnection(String token) {
+        httpSup = HttpController.Real.SUPPLIER;
         System.out.println("Warning, accessing deprecated QuandlConnection constructor");
         if (connectedWithGoodToken(token)) {
             this.token = token;
@@ -75,11 +70,10 @@ public class QuandlConnection implements AutoCloseable {
             System.out.println("Bad token... you are connected through the public api and will be rate limited accordingly.");
             this.token = null;
         }
-        httpSup = HttpController.Real.SUPPLIER;
     }
     
     // we use a separate, package-private constructor to avoid the printing constructors
-    /*package*/ QuandlConnection(String token, Supplier<HttpController> httpSup) {
+    /*package*/ QuandlConnection(String token, Supplier<? extends HttpController> httpSup) {
         // FIXME No checkNotNull() calls for 1.2, 1.3 should explicitly fail
         this.token = token; 
         this.httpSup = checkNotNull(httpSup);
@@ -199,8 +193,8 @@ public class QuandlConnection implements AutoCloseable {
      * @deprecated prints on failure
      */
     @Deprecated
-    private static boolean connectedWithGoodToken(String token) {
-        String output = curl(String.format(GOOD_TOKEN_URL, token));
+    private boolean connectedWithGoodToken(String checkToken) {
+        String output = curl(String.format(GOOD_TOKEN_URL, checkToken));
 
         if (output.contains("Unauthorized")) {
             // TODO raise an exception; or even just let the API calls raise exceptions and remove this check entirely
@@ -222,21 +216,16 @@ public class QuandlConnection implements AutoCloseable {
         }
     }
 
-    /** @deprecated use HttpController */
+    /** @deprecated use HttpController, which doesn't suppress errors */
     @Deprecated
-    private static String curl(String url) {
+    private String curl(String url) {
         System.out.println("Executing Request: " + url);
         
-        HttpClient httpclient = new DefaultHttpClient();
-        try {
-            HttpGet httpget = new HttpGet(url);
-            ResponseHandler<String> responseHandler = new BasicResponseHandler();
-            return httpclient.execute(httpget, responseHandler);
+        try(HttpController httpCont = httpSup.get()) {
+            return httpCont.getContents(url);
         } catch (IOException e) {
             e.printStackTrace();
             return e.getMessage();
-        } finally {
-            httpclient.getConnectionManager().shutdown();
         }
     }
 

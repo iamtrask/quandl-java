@@ -14,7 +14,7 @@ import com.google.common.collect.ImmutableMap;
  * @author Michael Diamond
  * @since  2014-6-6
  */
-public class SimpleQuery extends BaseQuery {
+public class SimpleQuery extends BaseQuery<SimpleQuery> {
     private final String qCode;
     
     /*package*/ SimpleQuery(String qCode) {
@@ -22,7 +22,7 @@ public class SimpleQuery extends BaseQuery {
         this.qCode = checkNotNull(qCode);
     }
 
-    /*package*/ SimpleQuery(String qCode, BaseQuery from) {
+    /*package*/ SimpleQuery(String qCode, BaseQuery<?> from) {
         super(from);
         this.qCode = checkNotNull(qCode);
     }
