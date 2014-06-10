@@ -1,36 +1,41 @@
 package com.quandl.api.deprecated;
 
-import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
+
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.testng.annotations.Test;
 
 import com.google.common.base.Function;
+import com.google.common.base.Supplier;
+import com.google.common.collect.ImmutableMap;
+import com.quandl.api.java.QDataset;
 import com.quandl.api.java.QuandlConnection;
 import com.quandl.api.util.LocalHttpController;
 
 public class QuandlConnectionTest {
-    private static final Function<String,String> lookups = new Function<String,String>() {
+    private static final Function<String,String> LOOKUPS = new Function<String,String>() {
         @Override
         public String apply(String fullUrl) {
             return fullUrl.replace("http://www.quandl.com/api/v1/","");
         }};
+    private static final Supplier<LocalHttpController> HTTP_SUP = LocalHttpController.supplier("deprecated."+QuandlConnectionTest.class.getSimpleName(), LOOKUPS);
     
     @Test
-    public void checkConstructor() throws Exception {
+    public void checkConstructor() {
         String out, err;
         try(TerminalOutRedirector tor = new TerminalOutRedirector()) {
             new QuandlConnection();
             out = tor.getCapturedOut();
             err = tor.getCapturedErr();
         }
-        assertEquals(out.length(), 152);
         assertTrue(out.matches("(?s).*Warning.*deprecated.*No token.*"));
-        assertEquals(err.length(), 0, "Was: "+err);
+        assertTrue(err.isEmpty(), "Was: "+err);
     }
     
     @Test(groups="remote")
-    public void checkTokenConstructor() throws Exception {
+    public void checkTokenConstructor() {
         String out, err;
         try(TerminalOutRedirector tor = new TerminalOutRedirector()) {
             new QuandlConnection("dummy-key");
@@ -38,11 +43,42 @@ public class QuandlConnectionTest {
             err = tor.getCapturedErr();
         }
         
-        assertEquals(out.length(), 383);
         assertTrue(out.matches("(?s).*Warning.*deprecated.*Executing Request.*BAD TOKEN.*"));
-        // err contains a stacktrace, so we can't easily confirm its length
         assertTrue(err.startsWith("org.apache.http.client.HttpResponseException: Unauthorized"));
     }
     
-    // TODO add normal tests to this class, adjusted for deprecation behavior
+    // TODO implement regression tests
+    @Test
+    public void testGetDataset() {
+        try(TerminalOutRedirector tor = new TerminalOutRedirector()) {
+            com.quandl.api.java.QuandlConnectionTest.getConnection(null, HTTP_SUP).getDataset("TEST");
+            com.quandl.api.java.QuandlConnectionTest.getConnection(null, HTTP_SUP).getDataset("MISSING");
+        }
+    }
+    
+    @Test
+    public void testGetDatasetBetweenDates() {
+        try(TerminalOutRedirector tor = new TerminalOutRedirector()) {
+            com.quandl.api.java.QuandlConnectionTest.getConnection(null, HTTP_SUP).getDatasetBetweenDates("TEST", "2000-1-1", "2000-2-1");
+            com.quandl.api.java.QuandlConnectionTest.getConnection(null, HTTP_SUP).getDatasetBetweenDates("MISSING", "2000-1-1", "2000-2-1");
+        }
+    }
+    
+    @Test
+    public void testGetDatasetWithCodeAndParams() {
+        try(TerminalOutRedirector tor = new TerminalOutRedirector()) {
+            com.quandl.api.java.QuandlConnectionTest.getConnection(null, HTTP_SUP).getDatasetWithParams("TEST", ImmutableMap.of("column","1"));
+            com.quandl.api.java.QuandlConnectionTest.getConnection(null, HTTP_SUP).getDatasetWithParams("TEST", ImmutableMap.of("invalid","1"));
+            com.quandl.api.java.QuandlConnectionTest.getConnection(null, HTTP_SUP).getDatasetWithParams("MISSING", ImmutableMap.of("column","1"));
+        }
+    }
+    
+    @Test(expectedExceptions=IllegalArgumentException.class)
+    public void testGetDatasetWithParams() {
+        try(TerminalOutRedirector tor = new TerminalOutRedirector()) {
+            com.quandl.api.java.QuandlConnectionTest.getConnection(null, HTTP_SUP).getDatasetWithParams(ImmutableMap.of("column","1"));
+            com.quandl.api.java.QuandlConnectionTest.getConnection(null, HTTP_SUP).getDatasetWithParams(ImmutableMap.of("invalid","1"));
+            com.quandl.api.java.QuandlConnectionTest.getConnection(null, HTTP_SUP).getDatasetWithParams(ImmutableMap.of("column","1"));
+        }
+    }
 }

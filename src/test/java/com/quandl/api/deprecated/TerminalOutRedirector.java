@@ -1,7 +1,10 @@
 package com.quandl.api.deprecated;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.PrintStream;
+
+import com.google.common.base.Throwables;
 
 /**
  * Class which enables temporary redirection of System.out and System.err
@@ -33,17 +36,17 @@ public class TerminalOutRedirector implements AutoCloseable {
     }
 
     @Override
-    public void close() throws Exception {
-        Exception raise = null;
+    public void close() {
+        RuntimeException raise = null;
         
         try {
             System.setOut(origOut);
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             raise = e;
         }
         try {
             System.setErr(origErr);
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             if(raise != null) {
                 e.addSuppressed(raise);
             }
@@ -53,11 +56,11 @@ public class TerminalOutRedirector implements AutoCloseable {
         try {
             out.close();
             err.close();
-        } catch (Exception e) {
+        } catch (IOException | RuntimeException e) {
             if(raise != null) {
                 e.addSuppressed(raise);
             }
-            raise = e;
+            Throwables.propagate(e);
         }
         
         if(raise != null) {
