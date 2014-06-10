@@ -124,21 +124,19 @@ public class QuandlConnection implements AutoCloseable {
     /**
      * Rollup method takes a given Query and returns an appropriate QDataset.
      * 
-     * The idea here is to use method overloading to call the correct sub-method,
-     * but at first glance this doesn't seem to work as desired.  Needs to be tested.
+     * Generally, callers should ensure their Query type is properly cast to the
+     * desired type (i.e. a SimpleQuery) so that the correct method is invoked.
+     * This method will still route to the correct place, but may not be as efficient.
      */
     public QDataset getDataset(Query unknownQuery) {
-        // Shouldn't need these instance of checks...
-        if(unknownQuery instanceof SimpleQuery) {
-            return getDataset((SimpleQuery)unknownQuery);
+        // We could replace this with a set of instanceof's and casts,
+        // but this is cleaner, and ought to be reasonably fast.
+        // Callers can avoid the reflection hit by properly casting their Queries
+        try {
+            return (QDataset)getClass().getMethod("getDataset", unknownQuery.getClass()).invoke(this, unknownQuery);
+        } catch (ReflectiveOperationException e) {
+            throw new UnsupportedOperationException("Unable to process "+unknownQuery.getClass().getName()+" - incomplete API?", e);
         }
-        if(unknownQuery instanceof MultisetQuery) {
-            return getDataset((MultisetQuery)unknownQuery);
-        }
-        if(unknownQuery instanceof MetadataQuery) {
-            return getDataset((MetadataQuery)unknownQuery);
-        }
-        throw new UnsupportedOperationException("Unable to process "+unknownQuery.getClass().getName()+" - incomplete API?");
     }
 
     /**
