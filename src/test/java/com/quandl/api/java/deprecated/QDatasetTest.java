@@ -1,4 +1,4 @@
-package com.quandl.api.deprecated;
+package com.quandl.api.java.deprecated;
 
 
 import static org.testng.Assert.*;

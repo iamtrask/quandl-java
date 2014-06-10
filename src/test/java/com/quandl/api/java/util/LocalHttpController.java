@@ -1,4 +1,4 @@
-package com.quandl.api.util;
+package com.quandl.api.java.util;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -13,6 +13,7 @@ import com.google.common.base.Functions;
 import com.google.common.base.Supplier;
 import com.google.common.base.Throwables;
 import com.google.common.io.Resources;
+import com.quandl.api.java.util.HttpController;
 
 public class LocalHttpController implements HttpController {
     private final String root;

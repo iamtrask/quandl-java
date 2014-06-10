@@ -12,7 +12,7 @@ import com.quandl.api.java.query.MetadataQuery;
 import com.quandl.api.java.query.MultisetQuery;
 import com.quandl.api.java.query.Query;
 import com.quandl.api.java.query.SimpleQuery;
-import com.quandl.api.util.HttpController;
+import com.quandl.api.java.util.HttpController;
 
 import java.io.IOException;
 import java.util.HashMap;

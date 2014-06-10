@@ -1,4 +1,4 @@
-package com.quandl.api.deprecated;
+package com.quandl.api.java.deprecated;
 
 import static org.testng.Assert.assertTrue;
 
@@ -12,7 +12,7 @@ import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableMap;
 import com.quandl.api.java.QDataset;
 import com.quandl.api.java.QuandlConnection;
-import com.quandl.api.util.LocalHttpController;
+import com.quandl.api.java.util.LocalHttpController;
 
 public class QuandlConnectionTest {
     private static final Function<String,String> LOOKUPS = new Function<String,String>() {

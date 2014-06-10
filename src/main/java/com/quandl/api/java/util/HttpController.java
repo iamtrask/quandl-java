@@ -1,4 +1,4 @@
-package com.quandl.api.util;
+package com.quandl.api.java.util;
 
 import java.io.IOException;
 
