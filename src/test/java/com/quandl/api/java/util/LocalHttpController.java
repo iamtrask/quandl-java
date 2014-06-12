@@ -7,6 +7,7 @@ import java.net.URL;
 
 import org.apache.http.client.HttpResponseException;
 
+import com.google.common.base.CharMatcher;
 import com.google.common.base.Charsets;
 import com.google.common.base.Function;
 import com.google.common.base.Functions;
@@ -16,6 +17,7 @@ import com.google.common.io.Resources;
 import com.quandl.api.java.util.HttpController;
 
 public class LocalHttpController implements HttpController {
+    private static final CharMatcher REPLACE = CharMatcher.anyOf("/?&");
     private final String root;
     private final Function<String,String> lookup;
     
@@ -40,7 +42,7 @@ public class LocalHttpController implements HttpController {
     @Override
     public String getContents(String url) throws HttpResponseException {
         try {
-            String path = root+"/"+lookup.apply(url);
+            String path = root+"/"+REPLACE.replaceFrom(lookup.apply(url), '=');
             URL resource = getClass().getClassLoader().getResource(path);
             if(resource == null) {
                 throw new HttpResponseException(404, String.format("%s: No local resource %s found for URL %s", getClass().getName(), path, url));

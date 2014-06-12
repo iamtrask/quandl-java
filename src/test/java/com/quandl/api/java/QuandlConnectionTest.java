@@ -14,13 +14,14 @@ public class QuandlConnectionTest {
             return fullUrl.replace("http://www.quandl.com/api/v1/","");
         }};
     
-    //@Test
+//    @Test
     public void tryConnect() {
         new QuandlConnection(null, LocalHttpController.supplier(getClass().getSimpleName(), lookups)).getDataset("Hello");
     }
     
     // Needed for deprecated package to construct test QuandlConnection instances
     @VisibleForTesting
+    @Deprecated
     public static QuandlConnection getConnection(String token, Supplier<LocalHttpController> httpSup) {
         return new QuandlConnection(token, httpSup);
     }

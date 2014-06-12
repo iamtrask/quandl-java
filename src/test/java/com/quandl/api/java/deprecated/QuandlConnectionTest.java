@@ -1,10 +1,12 @@
 package com.quandl.api.java.deprecated;
 
+import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import com.google.common.base.Function;
@@ -14,6 +16,7 @@ import com.quandl.api.java.QDataset;
 import com.quandl.api.java.QuandlConnection;
 import com.quandl.api.java.util.LocalHttpController;
 
+@Test(singleThreaded=true)
 public class QuandlConnectionTest {
     private static final Function<String,String> LOOKUPS = new Function<String,String>() {
         @Override
@@ -47,23 +50,50 @@ public class QuandlConnectionTest {
         assertTrue(err.startsWith("org.apache.http.client.HttpResponseException: Unauthorized"));
     }
     
+    @DataProvider
+    protected Object[][] datasets() {
+        return new Object[][] {
+            {"TEST",   "Executing Request: http://www.quandl.com/api/v1/datasets/TEST.json",   "^$"},
+            {"MISSING","Executing Request: http://www.quandl.com/api/v1/datasets/MISSING.json","(?s).*org.apache.http.client.HttpResponseException:.*No local resource.*"}
+        };
+    }
+    
+    @Test(dataProvider="datasets")
+    // Stderr can have stack traces, which can change, so we just look for a pattern
+    public void testGetDataset(String dataset, String outMatch, String errPat) {
+        String out, err;
+        try(TerminalOutRedirector tor = new TerminalOutRedirector()) {
+            com.quandl.api.java.QuandlConnectionTest.getConnection(null, HTTP_SUP).getDataset(dataset);
+            out = tor.getCapturedOut();
+            err = tor.getCapturedErr();
+        }
+        assertEquals(out.trim(), outMatch);
+        assertTrue(err.matches(errPat));
+    }
+    
+    @DataProvider
+    protected Object[][] datasetsBetweenDates() {
+        return new Object[][] {
+            {"TEST",   "Executing Request: http://www.quandl.com/api/v1/datasets/TEST.json?trim_start=2014-05-12&trim_end=2014-06-10",   "^$"},
+            {"MISSING","Executing Request: http://www.quandl.com/api/v1/datasets/MISSING.json?trim_start=2014-05-12&trim_end=2014-06-10",
+                       "(?s).*org.apache.http.client.HttpResponseException:.*No local resource.*"}
+        };
+    }
+    
+    @Test(dataProvider="datasetsBetweenDates")
+    // Stderr can have stack traces, which can change, so we just look for a pattern
+    public void testGetDatasetBetweenDates(String dataset, String outMatch, String errPat) {
+        String out, err;
+        try(TerminalOutRedirector tor = new TerminalOutRedirector()) {
+            com.quandl.api.java.QuandlConnectionTest.getConnection(null, HTTP_SUP).getDatasetBetweenDates(dataset, "2014-05-12", "2014-06-10");
+            out = tor.getCapturedOut();
+            err = tor.getCapturedErr();
+        }
+        assertEquals(out.trim(), outMatch);
+        assertTrue(err.matches(errPat));
+    }
+
     // TODO implement regression tests
-    @Test
-    public void testGetDataset() {
-        try(TerminalOutRedirector tor = new TerminalOutRedirector()) {
-            com.quandl.api.java.QuandlConnectionTest.getConnection(null, HTTP_SUP).getDataset("TEST");
-            com.quandl.api.java.QuandlConnectionTest.getConnection(null, HTTP_SUP).getDataset("MISSING");
-        }
-    }
-    
-    @Test
-    public void testGetDatasetBetweenDates() {
-        try(TerminalOutRedirector tor = new TerminalOutRedirector()) {
-            com.quandl.api.java.QuandlConnectionTest.getConnection(null, HTTP_SUP).getDatasetBetweenDates("TEST", "2000-1-1", "2000-2-1");
-            com.quandl.api.java.QuandlConnectionTest.getConnection(null, HTTP_SUP).getDatasetBetweenDates("MISSING", "2000-1-1", "2000-2-1");
-        }
-    }
-    
     @Test
     public void testGetDatasetWithCodeAndParams() {
         try(TerminalOutRedirector tor = new TerminalOutRedirector()) {
