@@ -1,6 +1,5 @@
 quandl-java
 ===========
- [![githalytics.com alpha](https://cruel-carlota.pagodabox.com/66c2b522d67dfd66cc5e445fc32976ee "githalytics.com")](http://githalytics.com/github.com/iamtrask)
 This is a Java API for the [Quandl data service](http://www.quandl.com/). It's goal is to make it easy for you to use Quandl's data in a Java application.
 
 Our first step is to open a connection to Quandl using an API key. This connection will facilitate the creation of dataset objects (dataset downloads).
